@@ -3,9 +3,15 @@ project(testing)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(testing main.cpp StringLength.cpp BaseTask.h Tickets.cpp)
+#FIND_PACKAGE( Boost REQUIRED )
 
-target_link_libraries(testing gtest_main gtest pthread stdc++fs)
+#INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+
+add_executable(testing main.cpp StringLength.cpp BaseTask.h Tickets.cpp Power.cpp Fibo.cpp)
+
+#target_link_libraries(testing gtest_main gtest pthread stdc++fs ${Boost_LIBRARIES})
+
+target_link_libraries(testing gtest_main gtest pthread stdc++fs -lgmpxx -lgmp)
 
 include(GoogleTest)
 gtest_discover_tests(testing)

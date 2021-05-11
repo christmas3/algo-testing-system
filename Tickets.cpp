@@ -4,9 +4,9 @@ struct TicketsTask : public BaseTask<TicketsTask>
 {
     std::string getPathImpl() const { return "../1.Tickets"; }
 
-    std::string run(const std::string& input)
+    std::string run(const std::vector<std::string>& input)
     {
-        const std::uint8_t N = std::atoi(input.c_str());
+        const std::uint8_t N = std::atoi(input[0].c_str());
 
         std::vector<std::uint32_t> sumPrev(N * 9 + 1, 0);
         std::fill(sumPrev.begin(), sumPrev.begin() + 10, 1);
@@ -31,4 +31,4 @@ struct TicketsTask : public BaseTask<TicketsTask>
     }
 };
 
-GENERATE_TEST(Tickets)
+GENERATE_TEST(Tickets, std::string)
