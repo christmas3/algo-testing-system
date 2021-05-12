@@ -1,6 +1,6 @@
 # testing-system
 Read input data and answers from files; 
-execute all given tests - string length and lucky tickets task; 
+execute all given tests - string length, lucky tickets task, N power of number, Fibonacci numbers and primes numbers;
 compare results with answers; 
 print execution time of every test
 
@@ -9,6 +9,7 @@ print execution time of every test
 * cmake
 * stdc++fs
 * gtest
+* gmp
 
 # Compiling
 ``` shell

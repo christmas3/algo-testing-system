@@ -37,7 +37,6 @@ void compareResult(T& result, T& val)
 template<>
 inline void compareResult<double>(double& result, double& val)
 {
-    std::cerr << "compareResult<double>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     EXPECT_FLOAT_EQ(result, val);
 }
 template<>
