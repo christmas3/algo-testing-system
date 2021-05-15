@@ -227,7 +227,7 @@ struct PrimesEratosfenTask : public BaseTask<PrimesEratosfenTask>
             return 0;
 
         std::uint32_t count = 0;
-        auto* primes = new std::uint16_t[N + 1]();
+        auto* primes = new bool[N + 1]();
         for (std::uint32_t p = 2; p <= N; ++p) {
             if (!primes[p]) {
                 ++count;
