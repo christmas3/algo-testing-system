@@ -78,27 +78,6 @@ inline mpf_class convertResult<mpf_class>(const std::string& result)
 template<typename T>
 struct BaseTask
 {
-    //    void runTestString(const TestParams& param)
-    //    {
-    //        double timeVal = 0;
-    //        std::string result;
-    //        TimeLapse(derived()->run(param.input), timeVal, result);
-    //        EXPECT_EQ(param.result, result);
-    //        std::cerr << std::fixed << "time passed: " << timeVal << " seconds" << std::endl;
-    //    }
-    //
-    //    void runTestDouble(const TestParams& param)
-    //    {
-    //        double timeVal = 0;
-    //        double result;
-    //        auto paramVec = splitString(param.input);
-    //        TimeLapse(derived()->run(paramVec), timeVal, result);
-    //        char* end;
-    //        auto expected = std::strtod(param.result.c_str(), &end);
-    //        EXPECT_FLOAT_EQ(expected, result);
-    //        std::cerr << std::fixed << "time passed: " << timeVal << " seconds" << std::endl;
-    //    }
-
     template<typename D>
     void runTest(const TestParams& param)
     {
