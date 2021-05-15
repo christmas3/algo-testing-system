@@ -228,10 +228,11 @@ struct PrimesEratosfenTask : public BaseTask<PrimesEratosfenTask>
 
         std::uint32_t count = 0;
         auto* primes = new bool[N + 1]();
+        auto sqrtN = sqrt(N);
         for (std::uint32_t p = 2; p <= N; ++p) {
             if (!primes[p]) {
                 ++count;
-                if (p <= sqrt(N)) {
+                if (p <= sqrtN) {
                     for (std::uint32_t i = p * p; i <= N; i += p) {
                         primes[i] = true;
                     }
