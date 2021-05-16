@@ -3,13 +3,7 @@ project(testing)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#FIND_PACKAGE( Boost REQUIRED )
-
-#INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
-
-add_executable(testing main.cpp StringLength.cpp BaseTask.h Tickets.cpp Power.cpp Fibo.cpp Primes.cpp)
-
-#target_link_libraries(testing gtest_main gtest pthread stdc++fs ${Boost_LIBRARIES})
+add_executable(testing main.cpp StringLength.cpp BaseTask.h Tickets.cpp Power.cpp Fibo.cpp Primes.cpp MultilineResultBaseTask.h BitChess.cpp)
 
 target_link_libraries(testing gtest_main gtest pthread stdc++fs -lgmpxx -lgmp)
 

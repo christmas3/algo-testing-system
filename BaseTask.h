@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 #include <gmpxx.h>
 
@@ -75,6 +76,33 @@ inline mpf_class convertResult<mpf_class>(const std::string& result)
     return res;
 }
 
+template<>
+inline std::uint64_t convertResult<std::uint64_t>(const std::string& result)
+{
+    try {
+        size_t pos;
+        return std::stoull(result, &pos);
+    }
+    catch (...) {
+    }
+    return 0;
+}
+
+static std::vector<std::string> splitString(const std::string& input)
+{
+    std::vector<std::string> res;
+    size_t begin = 0;
+    auto end = input.find("\r\n");
+    while (end != std::string::npos) {
+        res.push_back(input.substr(begin, end));
+        begin = end + 2;
+        end = input.substr(begin).find("\r\n");
+    }
+    res.push_back(input.substr(begin));
+
+    return res;
+}
+
 template<typename T>
 struct BaseTask
 {
@@ -114,23 +142,10 @@ struct BaseTask
         return result;
     }
 
-    static std::vector<std::string> splitString(const std::string& input)
-    {
-        std::vector<std::string> res;
-        size_t begin = 0;
-        auto end = input.find("\r\n");
-        while (end != std::string::npos) {
-            res.push_back(input.substr(begin, end));
-            begin = end + 2;
-            end = input.substr(begin).find("\r\n");
-        }
-        res.push_back(input.substr(begin));
-
-        return res;
-    }
+protected:
+    T* derived() { return static_cast<T*>(this); }
 
 private:
-    T* derived() { return static_cast<T*>(this); }
     void readFile(std::string* buf, const std::string& p, size_t size)
     {
         std::ifstream is{ p.c_str(), std::ios::in | std::ios::binary };
