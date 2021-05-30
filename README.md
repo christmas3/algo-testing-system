@@ -56,6 +56,8 @@ cmake --build .
 ./testing --gtest_filter=RookSuit/*                  # for execute calculation possible rook moves count and direction bit mask
 ./testing --gtest_filter=BishopSuit/*                # for execute calculation possible bishop moves count and direction bit mask
 ./testing --gtest_filter=QueenSuit/*                 # for execute calculation possible queen moves count and direction bit mask
+./testing --gtest_filter=Arrays*                     # for execute all array implementations tests and printed performance on 100000 operations
+./testing --gtest_filter=PriorityQueue*              # for execute priority queue implementation tests
 ```
 
 # Docker

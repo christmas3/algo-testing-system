@@ -149,9 +149,9 @@ void testRemoveFront(ArrayPtr<T>& arr, size_t total)
     TimeLapse(
         {
             for (int i = 0; i < total; ++i) {
-                //                arr->remove(0);
-                EXPECT_EQ(arr->remove(0), i);
-                EXPECT_EQ(arr->size(), total - i - 1);
+                arr->remove(0);
+                //                EXPECT_EQ(arr->remove(0), i);
+                //                EXPECT_EQ(arr->size(), total - i - 1);
             }
         },
         timeVal);
@@ -187,15 +187,15 @@ void testRemoveMiddle(ArrayPtr<T>& arr, size_t total)
     TimeLapse(
         {
             for (int i = 0; i < total; ++i) {
-                if (i == 0) {
-                    EXPECT_EQ(arr->remove(arr->size() / 2), total / 2);
-                }
-                else if (i + 1 == total) {
-                    EXPECT_EQ(arr->remove(arr->size() / 2), 0);
-                }
-                else {
-                    arr->remove(arr->size() / 2);
-                }
+                //                if (i == 0) {
+                //                    EXPECT_EQ(arr->remove(arr->size() / 2), total / 2);
+                //                }
+                //                else if (i + 1 == total) {
+                //                    EXPECT_EQ(arr->remove(arr->size() / 2), 0);
+                //                }
+                //                else {
+                arr->remove(arr->size() / 2);
+                //                }
             }
         },
         timeVal);
@@ -212,9 +212,9 @@ void testRemoveBack(ArrayPtr<T>& arr, size_t total)
     TimeLapse(
         {
             for (int i = 0; i < total; ++i) {
-                //                arr->removeBack();
-                EXPECT_EQ(arr->removeBack(), total - i - 1);
-                EXPECT_EQ(arr->size(), total - i - 1);
+                arr->removeBack();
+                //                EXPECT_EQ(arr->removeBack(), total - i - 1);
+                //                EXPECT_EQ(arr->size(), total - i - 1);
             }
         },
         timeVal);

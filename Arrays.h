@@ -2,6 +2,8 @@
 
 #include "ArraysInt.h"
 
+#include <vector>
+
 template<typename T>
 class SingleArray : public IArray<T>
 {
@@ -155,7 +157,8 @@ public:
 
 protected:
     virtual SizeType increaseCapacity() const { return capacity_ + step_; }
-    [[nodiscard]] virtual bool isNeedToShrink() const { return capacity_ - size_ >= step_ * 2 - 1; }
+    //    [[nodiscard]] virtual bool isNeedToShrink() const { return capacity_ - size_ >= step_ * 2 - 1; }
+    [[nodiscard]] virtual bool isNeedToShrink() const { return size_ < step_; }
     virtual SizeType shrinkCapacity() const { return capacity_ - step_; }
 
 private:
@@ -175,7 +178,7 @@ private:
 
     void shrink()
     {
-        capacity_ = shrinkCapacity();
+        capacity_ = step_;
         auto* newArr = new T[capacity_];
         memcpy(newArr, arr_, size_ * sizeof(T));
         delete[] arr_;
@@ -197,11 +200,6 @@ public:
 
 protected:
     SizeType increaseCapacity() const override { return VectorArray<T>::capacity() * 2; }
-    [[nodiscard]] bool isNeedToShrink() const override
-    {
-        return VectorArray<T>::capacity() - VectorArray<T>::size() >= VectorArray<T>::capacity() / 2 - 1;
-    }
-    SizeType shrinkCapacity() const override { return VectorArray<T>::capacity() / 2; }
 };
 
 template<typename T>
