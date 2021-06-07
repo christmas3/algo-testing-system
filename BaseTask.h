@@ -16,10 +16,26 @@
     TEST_P(Name##Test, Calculate##Name) { task##Name.runTest<Type>(GetParam()); } \
     INSTANTIATE_TEST_SUITE_P(Name##Suit, Name##Test, testing::ValuesIn(task##Name.getTestParams()));
 
+#define GENERATE_TEST_NAMESPACE(Name, Type, Namespace)                                                  \
+    struct Namespace##Name##Test : public BaseTest                                                      \
+    {                                                                                                   \
+    };                                                                                                  \
+    static Name##Task task##Name;                                                                       \
+    TEST_P(Namespace##Name##Test, Calculate##Namespace##Name) { task##Name.runTest<Type>(GetParam()); } \
+    INSTANTIATE_TEST_SUITE_P(Namespace##Name##Suit, Namespace##Name##Test, testing::ValuesIn(task##Name.getTestParams()));
+
 #define TimeLapse(code, time, result)                     \
     {                                                     \
         auto begin_t = std::clock();                      \
         result = code;                                    \
+        auto end_t = std::clock();                        \
+        time = (float)(end_t - begin_t) / CLOCKS_PER_SEC; \
+    }
+
+#define TimeLapseWithoutResult(code, time)                \
+    {                                                     \
+        auto begin_t = std::clock();                      \
+        code;                                             \
         auto end_t = std::clock();                        \
         time = (float)(end_t - begin_t) / CLOCKS_PER_SEC; \
     }
@@ -109,14 +125,18 @@ struct BaseTask
     template<typename D>
     void runTest(const TestParams& param)
     {
-        double timeVal = 0;
         D result;
         auto paramVec = splitString(param.input);
-        TimeLapse(derived()->run(paramVec), timeVal, result);
+        if (derived()->needTimeLapse()) {
+            double timeVal = 0;
+            TimeLapse(derived()->run(paramVec), timeVal, result);
+            std::cerr << std::fixed << "time passed: " << timeVal << " seconds" << std::endl;
+        }
+        else {
+            result = derived()->run(paramVec);
+        }
         D expected = convertResult<D>(param.result.c_str());
         compareResult(result, expected);
-
-        std::cerr << std::fixed << "time passed: " << timeVal << " seconds" << std::endl;
     }
 
     std::vector<TestParams> getTestParams()
@@ -156,6 +176,7 @@ private:
         buf->assign(std::istreambuf_iterator<char>{ is }, {});
         buf->erase(std::find_if(buf->rbegin(), buf->rend(), [](char ch) { return !std::isspace(ch); }).base(), buf->end());
     }
+    [[nodiscard]] bool needTimeLapse() const { return true; }
 };
 
 struct BaseTest : public testing::TestWithParam<TestParams>
