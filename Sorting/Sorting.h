@@ -191,48 +191,70 @@ struct ReversSortTask : public Sort<ReversSortTask>
 } // namespace insertion
 
 namespace shell {
-template<typename T>
-struct Sort : public ISort<Sort<T>>
+template<typename T, typename G>
+struct Sort : public ISort<Sort<T, G>>
 {
-    using SizeType = typename ISort<Sort<T>>::SizeType;
-    using ValueType = typename ISort<Sort<T>>::ValueType;
+    using SizeType = typename ISort<Sort<T, G>>::SizeType;
+    using ValueType = typename ISort<Sort<T, G>>::ValueType;
 
     void sort(ValueType* arr, SizeType size)
     {
-        for (SizeType i = 1; i < size; ++i) {
-            auto j = i;
-            auto val = arr[j];
-            if (val > arr[j - 1])
-                continue;
-            auto pos = findPos(arr, j, val);
-            while (j > pos) {
-                arr[j] = arr[j - 1];
-                --j;
-            }
-            if (j != i) {
-                arr[j] = val;
+        G gapGen(size);
+        for (typename G::GapSize gap = gapGen.getGap(); gap > 0; gap = gapGen.getNextGap()) {
+            for (typename G::GapSize i = 0; i + gap < size; ++i) {
+                typename G::GapSize j = i + gap;
+                auto tmp = arr[j];
+                while (j - gap >= 0 && tmp < arr[j - gap]) {
+                    arr[j] = arr[j - gap];
+                    j -= gap;
+                }
+                arr[j] = tmp;
             }
         }
     }
+
+private:
+    T* derived() { return static_cast<T*>(this); }
 };
 
-struct RandomSortTask : public Sort<RandomSortTask>
+} // namespace shell
+
+namespace shell_first {
+
+struct Gap
+{
+    using GapSize = std::int64_t;
+
+    GapSize getNextGap() { return gap_ /= 2; }
+    [[nodiscard]] GapSize getGap() const { return gap_; }
+
+    explicit Gap(std::int64_t size)
+        : gap_(size / 2)
+    {
+    }
+
+private:
+    GapSize gap_;
+};
+
+struct RandomSortTask : public shell::Sort<RandomSortTask, Gap>
 {
     [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/0.random"; }
 };
 
-struct DigitsSortTask : public Sort<DigitsSortTask>
+struct DigitsSortTask : public shell::Sort<DigitsSortTask, Gap>
 {
     [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/1.digits"; }
 };
 
-struct SortedSortTask : public Sort<SortedSortTask>
+struct SortedSortTask : public shell::Sort<SortedSortTask, Gap>
 {
     [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/2.sorted"; }
 };
 
-struct ReversSortTask : public Sort<ReversSortTask>
+struct ReversSortTask : public shell::Sort<ReversSortTask, Gap>
 {
     [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/3.revers"; }
 };
-} // namespace shell
+
+} // namespace shell_first
