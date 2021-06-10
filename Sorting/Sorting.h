@@ -2,8 +2,17 @@
 
 #include "../BaseTask.h"
 
-template<typename T>
-T toValueType(const std::string& str)
+namespace sorting {
+
+const char* kRandomTestPath = "../Sorting/sorting-tests/0.random";
+const char* kDigitsTestPath = "../Sorting/sorting-tests/1.digits";
+const char* kSortedTestPath = "../Sorting/sorting-tests/2.sorted";
+const char* kReversTestPath = "../Sorting/sorting-tests/3.revers";
+
+using ValueType = std::int32_t;
+using SizeType = size_t;
+
+ValueType toValueType(const std::string& str)
 {
     int32_t val = 0;
     for (auto ch : str) {
@@ -13,22 +22,20 @@ T toValueType(const std::string& str)
     return val;
 }
 
-template<typename T>
-void fillArray(T* arr, const std::string& val)
+void fillArray(ValueType* arr, const std::string& val)
 {
     size_t left = 0;
     size_t curIndex = 0;
     for (size_t i = 0; i < val.size(); ++i) {
         if (val[i] == ' ') {
-            arr[curIndex++] = toValueType<T>(val.substr(left, i - left));
+            arr[curIndex++] = toValueType(val.substr(left, i - left));
             left = i + 1;
         }
     }
-    arr[curIndex] = toValueType<T>(val.substr(left, val.size() - left));
+    arr[curIndex] = toValueType(val.substr(left, val.size() - left));
 }
 
-template<typename T>
-std::string toResult(T* arr, size_t size)
+std::string toResult(ValueType* arr, SizeType size)
 {
     std::string str = std::to_string(arr[0]);
     for (size_t i = 1; i < size; ++i) {
@@ -38,97 +45,45 @@ std::string toResult(T* arr, size_t size)
     return str;
 }
 
-template<typename T>
-struct ISort : public BaseTask<T>
+void swapVal(ValueType* arr, SizeType lhs, SizeType rhs)
 {
-    using ValueType = std::int32_t;
-    using SizeType = size_t;
+    auto tmp = arr[lhs];
+    arr[lhs] = arr[rhs];
+    arr[rhs] = tmp;
+}
 
-    [[nodiscard]] virtual std::string getPathImpl() const = 0;
-    [[nodiscard]] bool needTimeLapse() const { return false; }
+struct ISort
+{
+    [[nodiscard]] virtual const char* sortName() const = 0;
+    [[nodiscard]] virtual SizeType maxSize() const = 0;
 
-    std::string sort(const std::string& sizeStr, const std::string& val)
-    {
-        auto size = toValueType<SizeType>(sizeStr);
-        ValueType arr[size];
-        arr_ = arr;
-        fillArray(arr, val);
-        double timeVal = 0;
-        TimeLapseWithoutResult(derived()->sort(arr, size), timeVal);
-        std::cerr << std::fixed << "time passed: " << timeVal << " seconds" << std::endl;
-
-        return toResult(arr, size);
-    }
-
-    void swapVal(SizeType lhs, SizeType rhs)
-    {
-        auto tmp = arr_[lhs];
-        arr_[lhs] = arr_[rhs];
-        arr_[rhs] = tmp;
-    }
-
-    std::string run(const std::vector<std::string>& input) { return sort(input[0], input[1]); }
-
-    ISort()
-        : arr_(nullptr)
-    {
-    }
-
-private:
-    T* derived() { return static_cast<T*>(this); }
-    ValueType* arr_;
+    virtual ~ISort() = default;
+    virtual void sort(ValueType* arr, SizeType size) const = 0;
 };
 
-namespace bubble {
-
-template<typename T>
-struct Sort : public ISort<Sort<T>>
+struct BubbleSort : public ISort
 {
-    using SizeType = typename ISort<Sort<T>>::SizeType;
-    using ValueType = typename ISort<Sort<T>>::ValueType;
+    [[nodiscard]] const char* sortName() const override { return "Bubble: "; }
+    [[nodiscard]] SizeType maxSize() const override { return 100000; }
 
-    void sort(const ValueType* arr, SizeType size)
+    void sort(ValueType* arr, SizeType size) const override
     {
         for (SizeType i = 0; i < size; ++i) {
             for (SizeType j = 0; j < size - i - 1; ++j) {
                 if (arr[j + 1] < arr[j]) {
-                    ISort<Sort<T>>::swapVal(j, j + 1);
+                    swapVal(arr, j, j + 1);
                 }
             }
         }
     }
 };
 
-struct RandomSortTask : public Sort<RandomSortTask>
+struct InsertionSort : public ISort
 {
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/0.random"; }
-};
+    [[nodiscard]] const char* sortName() const override { return "Insertion: "; }
+    [[nodiscard]] SizeType maxSize() const override { return 100000; }
 
-struct DigitsSortTask : public Sort<DigitsSortTask>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/1.digits"; }
-};
-
-struct SortedSortTask : public Sort<SortedSortTask>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/2.sorted"; }
-};
-
-struct ReversSortTask : public Sort<ReversSortTask>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/3.revers"; }
-};
-
-} // namespace bubble
-
-namespace insertion {
-template<typename T>
-struct Sort : public ISort<Sort<T>>
-{
-    using SizeType = typename ISort<Sort<T>>::SizeType;
-    using ValueType = typename ISort<Sort<T>>::ValueType;
-
-    void sort(ValueType* arr, SizeType size)
+    void sort(ValueType* arr, SizeType size) const override
     {
         for (SizeType i = 1; i < size; ++i) {
             auto j = i;
@@ -147,7 +102,7 @@ struct Sort : public ISort<Sort<T>>
     }
 
 private:
-    SizeType findPos(ValueType* arr, SizeType size, ValueType val)
+    SizeType findPos(ValueType* arr, SizeType size, ValueType val) const
     {
         std::int64_t left = 0, right = size - 1, m = 0;
         while (left <= right) {
@@ -168,36 +123,13 @@ private:
     }
 };
 
-struct RandomSortTask : public Sort<RandomSortTask>
+template<typename G>
+struct ShellSort : public ISort
 {
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/0.random"; }
-};
+    [[nodiscard]] const char* sortName() const override { return G::name(); }
+    [[nodiscard]] SizeType maxSize() const override { return 10000000; }
 
-struct DigitsSortTask : public Sort<DigitsSortTask>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/1.digits"; }
-};
-
-struct SortedSortTask : public Sort<SortedSortTask>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/2.sorted"; }
-};
-
-struct ReversSortTask : public Sort<ReversSortTask>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/3.revers"; }
-};
-
-} // namespace insertion
-
-namespace shell {
-template<typename T, typename G>
-struct Sort : public ISort<Sort<T, G>>
-{
-    using SizeType = typename ISort<Sort<T, G>>::SizeType;
-    using ValueType = typename ISort<Sort<T, G>>::ValueType;
-
-    void sort(ValueType* arr, SizeType size)
+    void sort(ValueType* arr, SizeType size) const override
     {
         G gapGen(size);
         for (typename G::GapSize gap = gapGen.getGap(); gap > 0; gap = gapGen.getNextGap()) {
@@ -212,49 +144,23 @@ struct Sort : public ISort<Sort<T, G>>
             }
         }
     }
-
-private:
-    T* derived() { return static_cast<T*>(this); }
 };
 
-} // namespace shell
-
-namespace shell_first {
-
-struct Gap
+struct GapHalf
 {
     using GapSize = std::int64_t;
 
     GapSize getNextGap() { return gap_ /= 2; }
     [[nodiscard]] GapSize getGap() const { return gap_; }
 
-    explicit Gap(std::int64_t size)
+    explicit GapHalf(std::int64_t size)
         : gap_(size / 2)
     {
     }
 
+    static const char* name() { return "Shell sort with step half: "; }
+
 private:
     GapSize gap_;
 };
-
-struct RandomSortTask : public shell::Sort<RandomSortTask, Gap>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/0.random"; }
-};
-
-struct DigitsSortTask : public shell::Sort<DigitsSortTask, Gap>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/1.digits"; }
-};
-
-struct SortedSortTask : public shell::Sort<SortedSortTask, Gap>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/2.sorted"; }
-};
-
-struct ReversSortTask : public shell::Sort<ReversSortTask, Gap>
-{
-    [[nodiscard]] std::string getPathImpl() const override { return "../Sorting/sorting-tests/3.revers"; }
-};
-
-} // namespace shell_first
+} // namespace sorting

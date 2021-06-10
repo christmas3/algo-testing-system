@@ -2,29 +2,57 @@
 
 #include "Sorting.h"
 
-#define GENERATE_TEST_BUBBLE(Name) GENERATE_TEST_NAMESPACE(Name, std::string, Bubble)
-#define GENERATE_TEST_INSERTION(Name) GENERATE_TEST_NAMESPACE(Name, std::string, Insertion)
-#define GENERATE_TEST_SHELL_FIRST(Name) GENERATE_TEST_NAMESPACE(Name, std::string, ShellFirst)
+struct SortTest : public BaseTest
+{
+};
 
-namespace bubble {
+namespace sorting {
+static BubbleSort bubbleSort;
+static InsertionSort insertionSort;
+static ShellSort<GapHalf> shellHalfSort;
 
-GENERATE_TEST_BUBBLE(RandomSort)
-GENERATE_TEST_BUBBLE(DigitsSort)
-GENERATE_TEST_BUBBLE(SortedSort)
-GENERATE_TEST_BUBBLE(ReversSort)
-} // namespace bubble
+static void runTest(const std::string& input, const std::string& result)
+{
+    auto paramVec = splitString(input);
+    auto size = toValueType(paramVec[0]);
+    auto arrUPtr = std::make_unique<ValueType[]>(size);
+    fillArray(arrUPtr.get(), paramVec[1]);
+    for (ISort* sort : std::initializer_list<ISort*>{ &bubbleSort, &insertionSort, &shellHalfSort }) {
+        std::cerr << sort->sortName() << ": ";
+        if (sort->maxSize() < size) {
+            std::cerr << " skip" << std::endl;
+            continue;
+        }
+        auto arrUPtrCopy = std::make_unique<ValueType[]>(size);
+        memcpy(arrUPtrCopy.get(), arrUPtr.get(), size * sizeof(ValueType));
 
-namespace insertion {
+        double timeVal = 0;
+        TimeLapseWithoutResult(sort->sort(arrUPtrCopy.get(), size), timeVal);
+        std::cerr << std::fixed << "time passed: " << timeVal << " seconds" << std::endl;
 
-GENERATE_TEST_INSERTION(RandomSort)
-GENERATE_TEST_INSERTION(DigitsSort)
-GENERATE_TEST_INSERTION(SortedSort)
-GENERATE_TEST_INSERTION(ReversSort)
-} // namespace insertion
+        EXPECT_EQ(result, toResult(arrUPtrCopy.get(), size));
+    }
+    std::cerr << std::endl;
+}
 
-namespace shell_first {
-GENERATE_TEST_SHELL_FIRST(RandomSort)
-GENERATE_TEST_SHELL_FIRST(DigitsSort)
-GENERATE_TEST_SHELL_FIRST(SortedSort)
-GENERATE_TEST_SHELL_FIRST(ReversSort)
-} // namespace shell_first
+TEST_P(SortTest, ProcessSort)
+{
+    static int i = 0;
+    std::cerr << "test number " << i++ << ": " << std::endl;
+    runTest(GetParam().input, GetParam().result);
+}
+INSTANTIATE_TEST_SUITE_P(RandomSortSuit, SortTest, testing::ValuesIn(readTestParams(sorting::kRandomTestPath)));
+INSTANTIATE_TEST_SUITE_P(DigitsSortSuit, SortTest, testing::ValuesIn(readTestParams(sorting::kDigitsTestPath)));
+INSTANTIATE_TEST_SUITE_P(SortedSortSuit, SortTest, testing::ValuesIn(readTestParams(sorting::kSortedTestPath)));
+INSTANTIATE_TEST_SUITE_P(ReversSortSuit, SortTest, testing::ValuesIn(readTestParams(sorting::kReversTestPath)));
+
+} // namespace sorting
+
+//namespace shell_second {
+//TEST(GapTest, GapStep)
+//{
+//    for (Gap gap(100); gap.getGap() > 0; gap.getNextGap()) {
+//        std::cerr << "gap.: " << gap.getGap() << std::endl;
+//    }
+//}
+//} // namespace shell_second

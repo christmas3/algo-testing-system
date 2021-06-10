@@ -49,7 +49,8 @@ struct TestParams
 template<typename T>
 void compareResult(T& result, T& val)
 {
-    EXPECT_EQ(result, val);
+    //    EXPECT_EQ(result, val);
+    EXPECT_TRUE(result == val);
 }
 template<>
 inline void compareResult<double>(double& result, double& val)
@@ -119,6 +120,10 @@ static std::vector<std::string> splitString(const std::string& input)
     return res;
 }
 
+void readFile(std::string* buf, const std::string& p, size_t size);
+
+std::vector<TestParams> readTestParams(const char* path);
+
 template<typename T>
 struct BaseTask
 {
@@ -139,43 +144,12 @@ struct BaseTask
         compareResult(result, expected);
     }
 
-    std::vector<TestParams> getTestParams()
-    {
-        namespace fs = std::filesystem;
-
-        std::vector<TestParams> result;
-        fs::path testPath(derived()->getPathImpl());
-        for (size_t i = 0;; ++i) {
-            std::string fileNamePrefix = "test." + std::to_string(i);
-            fs::path fileInPath = testPath / std::string(fileNamePrefix + ".in");
-            fs::path fileOutPath = testPath / std::string(fileNamePrefix + ".out");
-
-            if (!fs::exists(fileInPath) || !fs::exists(fileOutPath)) {
-                break;
-            }
-            result.emplace_back(TestParams{});
-
-            readFile(&result.back().input, fileInPath.c_str(), fs::file_size(fileInPath));
-            readFile(&result.back().result, fileOutPath.c_str(), fs::file_size(fileOutPath));
-        }
-
-        return result;
-    }
+    std::vector<TestParams> getTestParams() { return readTestParams(derived()->getPathImpl().c_str()); }
 
 protected:
     T* derived() { return static_cast<T*>(this); }
 
 private:
-    void readFile(std::string* buf, const std::string& p, size_t size)
-    {
-        std::ifstream is{ p.c_str(), std::ios::in | std::ios::binary };
-        if (!is) {
-            return;
-        }
-        buf->reserve(size);
-        buf->assign(std::istreambuf_iterator<char>{ is }, {});
-        buf->erase(std::find_if(buf->rbegin(), buf->rend(), [](char ch) { return !std::isspace(ch); }).base(), buf->end());
-    }
     [[nodiscard]] bool needTimeLapse() const { return true; }
 };
 
