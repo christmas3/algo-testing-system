@@ -123,6 +123,8 @@ private:
     }
 };
 
+using GapSize = std::int64_t;
+
 template<typename G>
 struct ShellSort : public ISort
 {
@@ -132,9 +134,9 @@ struct ShellSort : public ISort
     void sort(ValueType* arr, SizeType size) const override
     {
         G gapGen(size);
-        for (typename G::GapSize gap = gapGen.getGap(); gap > 0; gap = gapGen.getNextGap()) {
-            for (typename G::GapSize i = 0; i + gap < size; ++i) {
-                typename G::GapSize j = i + gap;
+        for (GapSize gap = gapGen.getGap(); gap > 0; gap = gapGen.getNextGap()) {
+            for (GapSize i = 0; i + gap < size; ++i) {
+                GapSize j = i + gap;
                 auto tmp = arr[j];
                 while (j - gap >= 0 && tmp < arr[j - gap]) {
                     arr[j] = arr[j - gap];
@@ -148,8 +150,6 @@ struct ShellSort : public ISort
 
 struct GapHalf
 {
-    using GapSize = std::int64_t;
-
     GapSize getNextGap() { return gap_ /= 2; }
     [[nodiscard]] GapSize getGap() const { return gap_; }
 
@@ -163,4 +163,81 @@ struct GapHalf
 private:
     GapSize gap_;
 };
+
+struct GapHibbard
+{
+    GapSize getNextGap() { return gap_ = (gap_ - 1) / 2; }
+    [[nodiscard]] GapSize getGap() const { return gap_; }
+
+    explicit GapHibbard(std::int64_t size)
+        : gap_(0)
+    {
+        for (GapSize step = 1; step < size; step = (step + 1) * 2 - 1) {
+            gap_ = step;
+        }
+    }
+
+    static const char* name() { return "Shell sort with step Hibbard: "; }
+
+private:
+    GapSize gap_;
+};
+
+struct GapKnuth
+{
+    GapSize getNextGap() { return gap_ = gap_ / 3; }
+    [[nodiscard]] GapSize getGap() const { return gap_; }
+
+    explicit GapKnuth(std::int64_t size)
+        : gap_(0)
+    {
+        auto maxStep = size / 3;
+        for (GapSize step = 1; step < maxStep; step = step * 3 + 1) {
+            gap_ = step;
+        }
+    }
+
+    static const char* name() { return "Shell sort with step Knuth: "; }
+
+private:
+    GapSize gap_;
+};
+
+struct HeapSort : public ISort
+{
+    [[nodiscard]] const char* sortName() const override { return "Heap: "; }
+    [[nodiscard]] SizeType maxSize() const override { return 10000000; }
+
+    void sort(ValueType* arr, SizeType size) const override
+    {
+        for (std::int64_t root = size / 2 - 1; root >= 0; --root) {
+            moveMaxToRoot(arr, root, size);
+        }
+
+        for (std::int64_t i = size - 1; i >= 0; --i) {
+            swapVal(arr, 0, i);
+            moveMaxToRoot(arr, 0, i);
+        }
+    }
+
+private:
+    void moveMaxToRoot(ValueType* arr, SizeType root, SizeType size) const
+    {
+        auto L = 2 * root + 1;
+        auto R = L + 1;
+        auto max = root;
+
+        if (L < size && arr[max] < arr[L])
+            max = L;
+        if (R < size && arr[max] < arr[R])
+            max = R;
+
+        if (max == root)
+            return;
+
+        swapVal(arr, max, root);
+        moveMaxToRoot(arr, max, size);
+    }
+};
+
 } // namespace sorting

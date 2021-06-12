@@ -10,6 +10,9 @@ namespace sorting {
 static BubbleSort bubbleSort;
 static InsertionSort insertionSort;
 static ShellSort<GapHalf> shellHalfSort;
+static ShellSort<GapHibbard> shellHibbardSort;
+static ShellSort<GapKnuth> shellKnuthSort;
+static HeapSort heapSort;
 
 static void runTest(const std::string& input, const std::string& result)
 {
@@ -17,7 +20,8 @@ static void runTest(const std::string& input, const std::string& result)
     auto size = toValueType(paramVec[0]);
     auto arrUPtr = std::make_unique<ValueType[]>(size);
     fillArray(arrUPtr.get(), paramVec[1]);
-    for (ISort* sort : std::initializer_list<ISort*>{ &bubbleSort, &insertionSort, &shellHalfSort }) {
+    for (ISort* sort :
+         std::initializer_list<ISort*>{ &bubbleSort, &insertionSort, &shellHalfSort, &shellHibbardSort, &shellKnuthSort, &heapSort }) {
         std::cerr << sort->sortName() << ": ";
         if (sort->maxSize() < size) {
             std::cerr << " skip" << std::endl;
@@ -46,13 +50,20 @@ INSTANTIATE_TEST_SUITE_P(DigitsSortSuit, SortTest, testing::ValuesIn(readTestPar
 INSTANTIATE_TEST_SUITE_P(SortedSortSuit, SortTest, testing::ValuesIn(readTestParams(sorting::kSortedTestPath)));
 INSTANTIATE_TEST_SUITE_P(ReversSortSuit, SortTest, testing::ValuesIn(readTestParams(sorting::kReversTestPath)));
 
-} // namespace sorting
+TEST(GapTest, GapHibbard)
+{
+    for (GapHibbard gap(1000); gap.getGap() > 0; gap.getNextGap()) {
+        std::cerr << gap.getGap() << " ";
+    }
+    std::cerr << std::endl;
+}
 
-//namespace shell_second {
-//TEST(GapTest, GapStep)
-//{
-//    for (Gap gap(100); gap.getGap() > 0; gap.getNextGap()) {
-//        std::cerr << "gap.: " << gap.getGap() << std::endl;
-//    }
-//}
-//} // namespace shell_second
+TEST(GapTest, GapKnuth)
+{
+    for (GapKnuth gap(1000); gap.getGap() > 0; gap.getNextGap()) {
+        std::cerr << gap.getGap() << " ";
+    }
+    std::cerr << std::endl;
+}
+
+} // namespace sorting

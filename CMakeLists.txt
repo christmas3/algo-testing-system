@@ -9,5 +9,5 @@ add_executable(testing main.cpp StringLength.cpp BaseTask.h Tickets.cpp Power.cp
 target_link_libraries(testing gtest_main gtest pthread stdc++fs -lgmpxx -lgmp)
 
 include(GoogleTest)
-gtest_discover_tests(testing DISCOVERY_TIMEOUT 40)
+gtest_discover_tests(testing DISCOVERY_TIMEOUT 100)
 
